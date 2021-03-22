@@ -1,0 +1,19 @@
+FROM python:3.9
+
+RUN useradd --shell /sbin/nologin consumer
+RUN mkdir /home/consumer
+RUN chown consumer:consumer /home/consumer
+WORKDIR /home/consumer
+USER consumer
+RUN python3 -m venv venv
+ENV PATH="/home/consumer/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/home/consumer/venv"
+
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+COPY --chown=consumer:consumer service/consumer.py .
+COPY --chown=consumer:consumer service/rabbit_client.py .
+COPY --chown=consumer:consumer service/schemas.py .
+COPY --chown=consumer:consumer service/http_client.py .
+
+CMD ["python3", "/home/consumer/consumer.py"]

@@ -1,0 +1,18 @@
+FROM python:3.9
+
+RUN useradd --shell /sbin/nologin producer
+RUN mkdir /home/producer
+RUN chown producer:producer /home/producer
+WORKDIR /home/producer
+USER producer
+RUN python3 -m venv venv
+ENV PATH="/home/producer/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/home/producer/venv"
+
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+COPY --chown=producer:producer service/producer.py .
+COPY --chown=producer:producer service/rabbit_client.py .
+COPY --chown=producer:producer service/schemas.py .
+
+CMD ["python3", "/home/producer/producer.py"]

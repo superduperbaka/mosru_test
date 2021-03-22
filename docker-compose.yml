@@ -1,0 +1,51 @@
+version: '3.4'
+services:
+  rabbit:
+    image: rabbitmq:latest
+    environment:
+      RABBITMQ_DEFAULT_USER: "user"
+      RABBITMQ_DEFAULT_PASS: "password"
+      RABBITMQ_DEFAULT_VHOST: "my_vhost"
+    ports:
+      - "127.0.0.1:5672:5672"
+
+  producer:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile-producer
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+      RABBIT_VHOST: "my_vhost"
+      RABBIT_USER: "user"
+      RABBIT_PASSWORD: "password"
+      RABBIT_TASK_QUEUE: "task_queue"
+      LOG_LEVEL: "10"
+    depends_on:
+      - rabbit
+
+  consumer:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile-consumer
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+      RABBIT_VHOST: "my_vhost"
+      RABBIT_USER: "user"
+      RABBIT_PASSWORD: "password"
+      RABBIT_TASK_QUEUE: "task_queue"
+      WORKER_TEST_URL: "http://backend:80"
+      WORKER_NUM: "20"
+      LOG_LEVEL: "10"
+    depends_on:
+      - rabbit
+
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile-backend
+    ports:
+      - "127.0.0.1:80:80"
+
+
